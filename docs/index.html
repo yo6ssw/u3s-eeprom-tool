@@ -1,37 +1,677 @@
----
-layout: default
-title: Home
----
+<html>
+<head>
+	<title>U3S EEPROM GUI</title>
+	<meta charset="utf-8">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="u3s.js"></script>
 
-<div class="posts">
-  {% for post in paginator.posts %}
-  <div class="post">
-    <h1 class="post-title">
-      <a href="{{ post.url }}">
-        {{ post.title }}
-      </a>
-    </h1>
+	<link href="//fonts.googleapis.com/css?family=Corben:bold" rel="stylesheet" type="text/css">
+	<link href="//fonts.googleapis.com/css?family=Nobile" rel="stylesheet" type="text/css">
 
-    <span class="post-date">{{ post.date | date_to_string }}</span>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.css" />
 
-    {{ post.excerpt | markdownify}}
-  </div>
-  {% endfor %}
-</div>
+ 	<style type="text/css">
 
-<div class="pagination">
-  {% if paginator.next_page %}
-    <a class="pagination-item older" href="{{ site.baseurl }}page{{paginator.next_page}}">Older</a>
-  {% else %}
-    <span class="pagination-item older">Older</span>
-  {% endif %}
-  {% if paginator.previous_page %}
-    {% if paginator.page == 2 %}
-      <a class="pagination-item newer" href="{{ site.baseurl }}">Newer</a>
-    {% else %}
-      <a class="pagination-item newer" href="{{ site.baseurl }}page{{paginator.previous_page}}">Newer</a>
-    {% endif %}
-  {% else %}
-    <span class="pagination-item newer">Newer</span>
-  {% endif %}
-</div>
+		html, body, div, span, applet, object, iframe,
+		h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+		a, abbr, acronym, address, big, cite, code,
+		del, dfn, em, img, ins, kbd, q, s, samp,
+		small, strike, strong, sub, sup, tt, var,
+		b, u, i, center,
+		dl, dt, dd, ol, ul, li,
+		fieldset, form, label, legend,
+		table, caption, tbody, tfoot, thead, tr, th, td,
+		article, aside, canvas, details, embed, 
+		figure, figcaption, footer, header, hgroup, 
+		menu, nav, output, ruby, section, summary,
+		time, mark, audio, video {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			font-size: 100%;
+			font: inherit;
+			vertical-align: baseline;
+		}
+		/* HTML5 display-role reset for older browsers */
+		article, aside, details, figcaption, figure, 
+		footer, header, hgroup, menu, nav, section {
+			display: block;
+		}
+		body {
+			line-height: 1;
+		}
+		ol, ul {
+			list-style: none;
+		}
+		blockquote, q {
+			quotes: none;
+		}
+		blockquote:before, blockquote:after,
+		q:before, q:after {
+			content: '';
+			content: none;
+		}
+		table {
+			border-collapse: collapse;
+			border-spacing: 0;
+		}
+
+
+/*		h1, h2, h3, h4, h5, h6 {
+		    font-family: 'Corben', Georgia, Times, serif;
+		}
+*//*		p, div, input, textarea  {
+		    font-family: 'Nobile', Helvetica, Arial, sans-serif;
+		}		
+*/
+
+		* {
+			font-family: Arial, sans-serif;
+			font-size: 12pt;
+		}
+
+		*:focus {
+		    outline: none;
+		    border-color: #FF0000;
+		}
+
+		#eepromForm {
+/*			display: block;
+			width: 100%;
+*/			/*float: left;*/
+		}
+
+		body {
+			background-color: #1485CC;
+		}
+
+		input[type=file] {
+			display: none;
+		}
+
+		div.centered {
+			width: 800px;
+			margin: auto;
+			display: block;
+			margin-top: 1em;
+			/*border: 1px solid red;*/
+		}
+
+		div.holder {
+			width: 100%;
+			float: left;
+			display: block;
+			background-color: #0971B2;
+			/*color: #EAFFB1;*/
+			color: #44C5FC;
+			border-radius: 8px;
+/*			outline: 2px dashed rgba(255, 255, 255, 10);
+			outline-offset: -20px;
+*/			box-shadow: 20px 20px 50px #0971B2;
+			padding: 40px;
+			margin-bottom: 4em;
+		}
+
+		#signature {
+			width: 100%;
+			display: block;
+			color: #44C5FC;
+			font-family: Arial, sans-serif;
+			font-size: 0.8em;
+			font-weight: bold;
+			text-align: center;
+			float: left;
+			position: relative;
+			top: 6em;
+			line-height: 1.4em;
+		}
+
+		#signature a {
+			color: white;
+		}
+
+		#instructions {
+			text-align: center;
+		}
+
+		.is-dragover {
+			outline-offset: -20px;
+			outline-color: #c8dadf;
+			background-color: #fff;
+		}		
+
+		.section {
+			float: left;
+			width: 100%;
+			clear: both;
+			font-size: 0.8em;
+			font-family: 'Corben', Georgia, Times, serif;
+			margin-bottom: 2em;
+			color: white;
+
+		}
+
+		.field {
+			float: left;
+			width: 50%;
+			margin-bottom: 1em;
+			/*padding: 4px;*/
+			/*border: 1px solid blue;*/
+			/*clear: both;*/
+		}
+
+		.checkbox-field {
+			float: left;
+			width: 50%;
+			margin-bottom: 1em;
+			/*padding: 4px;*/
+			/*border: 1px solid blue;*/
+			/*clear: both;*/
+		}
+
+		.label {
+			clear: left;
+			width: 30%;
+			display: block;
+			float: left;
+			padding: 4px 0 4px 0;
+			font-family: Arial, sans-serif;
+			font-weight: bold;
+			cursor: pointer;
+		}
+
+		.general-field > .entry {
+			border: 0;
+			border-bottom: 1px dashed;
+			display: block;
+			float: left;
+			width: 50%;
+			padding: 4px 0 4px 0;
+			background-color: #0971B2;
+			/*color: #EAFFB1;*/
+			color: white;
+			/*border: 1px solid green;*/
+		}
+
+		.general-field > .entry[readonly] {
+			color: #44C5FC;
+		}
+
+		.checkbox-field > label {
+			margin-left: 28%;
+			cursor: pointer;
+		}
+
+
+		textarea.entry {
+			height: 4em;
+		}
+
+
+		div.object-label  {
+			background-color: green;
+			color: white;
+			display: block;
+			width: 100%;
+		}
+
+		ul {
+			display: block;
+			list-style-type: none;
+			margin: auto;
+			padding: 0;
+			margin-top: -1em;
+			margin-left: 0em;
+			float: left;
+			position: relative;
+			width: 100%;
+			margin-bottom: 2em;
+			/*background-color: #1485CC;*/
+		}
+		li {
+			display: block;
+			/*width: 200px;*/
+			float: left;
+			/*background-color: #1485CC;*/
+			/*outline: 2px dashed red;*/
+			/*outline-color: red;*/
+			margin: 0;
+			padding: 0.5em;
+			cursor: pointer;
+		}
+
+		li.active {
+			background-color: #1485CC;
+			color: #EAFFB1;
+		}
+
+		li:hover {
+			background-color: #1485CC;
+		}
+
+		.menu-item-right {
+			float: right;
+		}
+
+
+	</style>
+
+
+	<script language="JavaScript">
+		var eeprom;
+		var eepromFilename;
+
+		function saveEepromToFilename(eeprom, filename) {
+			var outcome = Module.eepromToHex(eeprom);
+			if (outcome.success === true) {
+				var content = outcome.result;
+
+				var element = document.createElement('a');
+				element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+				element.setAttribute('download', filename);
+
+				element.style.display = 'none';
+				document.body.appendChild(element);
+
+				element.click();
+				document.body.removeChild(element);						
+
+				// new Noty({
+				// 	type: 'success',
+				// 	layout: 'topRight',
+				// 	theme: 'metroui',
+				// 	timeout: 3000,
+				// 	text: 'Eeprom file successfully saved'
+				// }).show();
+			} else {
+				new Noty({
+					type: 'error',
+					layout: 'topCenter',
+					theme: 'metroui',
+					modal: true,
+					text: 'Failed to encode eeprom file. Reason: ' + outcome.errorDescription,
+				}).show();
+			}
+		}
+
+		function toRegularCase(str) {
+			return str.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); })
+		}
+
+		function createGeneralField(fieldId, name, value, type) {
+			if (typeof type == 'undefined') {
+				type = 'input';
+			}
+
+			var $holder;
+
+			if (type == 'checkbox') {
+				$holder = $('<div>').addClass('field checkbox-field');
+				var $label = $('<label>');
+				var $checkbox = $('<input type="checkbox">').addClass('entry').attr('id', fieldId).prop('checked', value).appendTo($label);
+				$label.append(document.createTextNode(name));
+				$label.appendTo($holder);
+
+			} else {
+				$holder = $('<div>').addClass('field general-field');
+				$('<label>').addClass('label').attr('for', fieldId).text(name).appendTo($holder);
+				$('<' + type + '>').addClass('entry').attr('id', fieldId).val(value).appendTo($holder);
+			}
+			return $holder;
+		}
+
+		function createModeField(fieldId, name, value) {
+			var $holder = $('<div>').addClass('field general-field');
+			$('<label>').addClass('label').attr('for', fieldId).text(name).appendTo($holder);
+			var $select = $('<select>').addClass('entry').attr('id', fieldId);
+
+			for (var i = 0; i < Module.getAllModes().size(); i++) {
+				var mode = Module.getAllModes().get(i);
+				$('<option value="' + mode.getValue() + '" title="' + mode.getComment() + '">' + mode.getShortName() + '</option>').appendTo($select);
+			}
+
+			$select.val(value).appendTo($holder);
+			return $holder;
+		}
+
+		function createBandField(fieldId, name, value) {
+			var $holder = $('<div>').addClass('field general-field');
+			$('<label>').addClass('label').attr('for', fieldId).text(name).appendTo($holder);
+			var $select = $('<select>').addClass('entry').attr('id', fieldId);
+
+			for (var i = 0; i < 6; i++) {
+				$('<option value="' + i + '">' + i + '</option>').appendTo($select);
+			}
+
+			$select.val(value).appendTo($holder);
+			return $holder;
+		}
+
+		function createTransmission(tx, i, $generalHolder) {
+			var idPrefix = 'tx-' + i;
+
+			$('<div>').addClass('section').text('TX' + i).appendTo($generalHolder);
+			createGeneralField(idPrefix + '-enabled', 'Enabled', tx.enabled, 'checkbox').appendTo($generalHolder);
+			createModeField(idPrefix + '-mode', 'Mode', tx.mode).appendTo($generalHolder);
+			createGeneralField(idPrefix + '-frequency', 'Frequency', tx.frequency).appendTo($generalHolder);
+			createBandField(idPrefix + '-band', 'Band', tx.band).appendTo($generalHolder);
+			createGeneralField(idPrefix + '-aux', 'Aux', tx.aux).appendTo($generalHolder);
+			createGeneralField(idPrefix + '-pwr', 'PWR/MsgIdx', tx.wsprPowerOrSubMessageIndex).appendTo($generalHolder);
+		}
+
+		function formFromEeprom(eeprom) {
+			var $holder = $('<div>').addClass('holder');
+
+			var $menu = $('<ul>');
+			$('<li>')
+				.text('General')
+				.addClass('active')
+				.on('click', function() {
+					$('#transmissions-holder').hide();
+					$('#general-holder').show();
+					$('li.active').removeClass('active');
+					$(this).addClass('active');
+				})
+				.appendTo($menu);
+			$('<li>')
+				.text('Transmissions')
+				.on('click', function() {
+					$('#general-holder').hide();
+					$('#transmissions-holder').show();
+					$('li.active').removeClass('active');
+					$(this).addClass('active');
+				})
+				.appendTo($menu);
+			$('<li>')
+				.text('Save')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					eepromFromForm();
+					saveEepromToFilename(eeprom, eepromFilename);
+				})
+				.appendTo($menu);
+			$('<li>')
+				.text('Open')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					$('#fileToRead').click();
+				})
+				.appendTo($menu);
+			$menu.appendTo($holder);
+
+			var $generalHolder = $('<div>').attr('id', 'general-holder').addClass('general-holder');
+			// $('<div>').addClass('section').text('General').appendTo($generalHolder);
+
+			createGeneralField('version-u3s', 'U3S version', Module.eepromVersionToU3SVersions(eeprom.version)).appendTo($generalHolder);
+			createGeneralField('version-eeprom', 'EEP version', eeprom.version).appendTo($generalHolder);
+			createGeneralField('callsign', 'Callsign', eeprom.callsign).appendTo($generalHolder);
+			createGeneralField('locator', 'Locator', eeprom.locator).appendTo($generalHolder);
+			createGeneralField('refClock', 'Ref Clock', eeprom.refClock).appendTo($generalHolder);
+			createGeneralField('sysClock', 'Sys Clock', eeprom.sysClock).appendTo($generalHolder);
+			createGeneralField('ptt', 'PTT', eeprom.ptt).appendTo($generalHolder);
+			createGeneralField('message', 'Message', eeprom.message, 'textarea').appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Backlight').appendTo($generalHolder);
+			createGeneralField('backlight-timeout', 'Timeout', eeprom.backlight.timeout).appendTo($generalHolder);
+			createGeneralField('backlight-bright', 'Bright', eeprom.backlight.bright).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Calibration').appendTo($generalHolder);
+			createGeneralField('cal-step', 'Step', eeprom.calibration.step).appendTo($generalHolder);
+			createGeneralField('cal-time', 'Time', eeprom.calibration.time).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Config').appendTo($generalHolder);
+			createGeneralField('config-extendedWspr', 'Extended WSPR', eeprom.config.extendedWsprFlag, 'checkbox').appendTo($generalHolder);
+			createGeneralField('config-x2Freq', 'x2 Freq', eeprom.config.x2FrequencyFlag, 'checkbox').appendTo($generalHolder);
+			createGeneralField('config-tuneEnable', 'Tune Enable', eeprom.config.tuneEnableFlag, 'checkbox').appendTo($generalHolder);
+			createGeneralField('config-invOutput', 'Inv. Output', eeprom.config.invertedOutputFlag, 'checkbox').appendTo($generalHolder);
+			createGeneralField('config-txScreens', 'TX Screens', eeprom.config.txScreens).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Frame').appendTo($generalHolder);
+			createGeneralField('frame-frame', 'Frame', eeprom.frame.frame).appendTo($generalHolder);
+			createGeneralField('frame-start', 'Start', eeprom.frame.start).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Fsk').appendTo($generalHolder);
+			createGeneralField('fsk-fine', 'Fine', eeprom.fsk.fine, 'checkbox').appendTo($generalHolder);
+			createGeneralField('fsk-size', 'Size', eeprom.fsk.size).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Gps').appendTo($generalHolder);
+			createGeneralField('gps-mode', 'Mode', eeprom.gpsModeBaud.mode).appendTo($generalHolder);
+			createGeneralField('gps-baud', 'Baud', eeprom.gpsModeBaud.baud).appendTo($generalHolder);
+			createGeneralField('gps-info', 'Info', eeprom.gpsInfo.info).appendTo($generalHolder);
+			createGeneralField('gps-check', 'Check', eeprom.gpsInfo.check).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Park').appendTo($generalHolder);
+			createGeneralField('park-mode', 'Mode', eeprom.park.mode).appendTo($generalHolder);
+			createGeneralField('park-frequency', 'Frequency', eeprom.park.frequency).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Raise Cos').appendTo($generalHolder);
+			createGeneralField('raiseCos-ms', 'Milliseconds', eeprom.raiseCos.ms).appendTo($generalHolder);
+			createGeneralField('raiseCos-max', 'Max', eeprom.raiseCos.max).appendTo($generalHolder);
+
+			$('<div>').addClass('section').text('Speed').appendTo($generalHolder);
+			createGeneralField('speed-cw', 'Cw', eeprom.speed.cw).appendTo($generalHolder);
+			createGeneralField('speed-qrss', 'Qrss', eeprom.speed.qrss).appendTo($generalHolder);
+			createGeneralField('speed-hell', 'Hell', eeprom.speed.hell).appendTo($generalHolder);
+			$generalHolder.appendTo($holder);
+
+			var $transmissionsHolder = $('<div>').attr('id', 'transmissions-holder').addClass('general-holder');
+			for (var i = 0; i < 16; i++) {
+				var tx = eeprom.transmissions.get(i);
+				createTransmission(tx, i, $transmissionsHolder);
+			}
+			$transmissionsHolder.hide().appendTo($holder);
+
+
+			$('div.centered').remove();
+			var $centered = $('<div>').addClass('centered');
+			createSignature().appendTo($holder);
+
+			$holder.appendTo($centered);
+			$centered.appendTo($('#eepromForm'));
+
+			$('#version-eeprom').attr('readonly', true);
+			$('#version-u3s').attr('readonly', true);
+		}
+
+		function eepromFromForm() {
+			eeprom.callsign = $('#callsign').val();
+			eeprom.locator = $('#locator').val();
+			eeprom.refClock = parseInt($('#refClock').val());
+			eeprom.sysClock = parseInt($('#sysClock').val());
+			eeprom.ptt = parseInt($('#ptt').val());
+			eeprom.message = $('#message').val();
+
+			eeprom.backlight.timeout = parseInt($('#backlight-timeout').val());
+			eeprom.backlight.bright = parseInt($('#backlight-bright').val());
+
+			eeprom.calibration.step = parseInt($('#cal-step').val());
+			eeprom.calibration.time = parseInt($('#cal-time').val());
+
+			eeprom.config.extendedWsprFlag = $('#config-extendedWspr').is(':checked');
+			eeprom.config.x2FrequencyFlag = $('#config-x2Freq').is(':checked');
+			eeprom.config.tuneEnableFlag = $('#config-tuneEnable').is(':checked');
+			eeprom.config.invertedOutputFlag = $('#config-invOutput').is(':checked');
+			eeprom.config.txScreens = parseInt($('#config-txScreens').val());
+
+			eeprom.frame.frame = parseInt($('#frame-frame').val());
+			eeprom.frame.start = parseInt($('#frame-start').val());
+
+			eeprom.fsk.fine = $('#fsk-fine').is(':checked');
+			eeprom.fsk.size = parseInt($('#fsk-size').val());
+
+			eeprom.gpsModeBaud.mode = parseInt($('#gps-mode').val());
+			eeprom.gpsModeBaud.baud = parseInt($('#gps-baud').val());
+			eeprom.gpsInfo.info = parseInt($('#gps-info').val());
+			eeprom.gpsInfo.check = parseInt($('#gps-check').val());
+
+			eeprom.park.mode = parseInt($('#park-mode').val());
+			eeprom.park.frequency = parseInt($('#park-frequency').val());
+
+			eeprom.raiseCos.ms = parseInt($('#raiseCos-ms').val());
+			eeprom.raiseCos.max = parseInt($('#raiseCos-max').val());
+
+			eeprom.speed.cw = parseInt($('#speed-cw').val());
+			eeprom.speed.qrss = parseInt($('#speed-qrss').val());
+			eeprom.speed.hell = parseInt($('#speed-hell').val());
+
+			for (var i = 0; i < 16; i++) {
+				var tx = eeprom.transmissions.get(i);
+
+				var idPrefix = 'tx-' + i;
+				tx.enabled = $('#' + idPrefix + '-enabled').is(':checked');
+				tx.mode = parseInt($('#' + idPrefix + '-mode').val());
+				tx.frequency = parseInt($('#' + idPrefix + '-frequency').val());
+				tx.aux = parseInt($('#' + idPrefix + '-aux').val());
+				tx.band = parseInt($('#' + idPrefix + '-band').val());
+				tx.wsprPowerOrSubMessageIndex = parseInt($('#' + idPrefix + '-pwr').val());
+
+				eeprom.transmissions.set(i, tx);
+			}
+		}
+
+		function createSignature() {
+			var $signature = $('<div>').attr('id', 'signature').html( Module.getVersion() + ' - Written by Adrian Scripcă, YO6SSW, benishor@gmail.com. <br/>Support the development by <a href="https://www.paypal.me/benishor" target="_blank">donating</a>.');
+			return $signature;		
+		}
+
+		function createInitialMarkup() {
+			var $holder = $('<div>').addClass('holder');
+
+			var $menu = $('<ul>');
+			$('<li>')
+				.attr('id', 'menu-item-open')
+				.text('Open')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					$('#fileToRead').click();
+				})
+				.appendTo($menu);
+			$menu.appendTo($holder);
+
+			var $instructions = $('<div id="instructions">').html("Click <strong>Open</strong> and select a valid U3S .eep file in order to get started");
+			$instructions.appendTo($holder);
+
+			$('div.centered').remove();
+			var $centered = $('<div>').addClass('centered');
+			createSignature().appendTo($holder);
+
+			$holder.appendTo($centered);
+			$centered.appendTo($('#eepromForm'));
+
+		}
+
+		function onEepLoaded(filename, content) {
+			try  {
+				var outcome = Module.hexToEeprom(content);
+				// console.log(outcome); 
+				if (outcome.success === true) {
+					eeprom = outcome.result;
+					eepromFilename = filename;
+					formFromEeprom(eeprom);
+
+					new Noty({
+						type: 'success',
+						layout: 'topRight',
+						theme: 'metroui',
+						timeout: 3000,
+    					text: 'Successfully decoded eeprom file ' + filename,
+					}).show();
+
+				} else {
+					new Noty({
+						type: 'error',
+						layout: 'topCenter',
+						theme: 'metroui',
+						modal: true,
+    					text: 'Failed to decode eeprom file ' + filename + ". Reason: " + outcome.errorDescription,
+					}).show();
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		}
+
+		$(document).ready(function() {
+
+			var mockContent = `:20000000000000001ECD5B87524636345653005A4C31525300000000000000000000EC03FD
+:20002000000000AA1E000A0000000A0000145ABA9A00000000000000000000000000000022
+:200040000000000000000000000000000000000000000000000000000000000000000000A0
+:20006000000000000000000000000000000000000000000000000000000000000000000080
+:20008000000000000000000000000000000000000000000000000000000000000000000060
+:2000A00000000000000000000000490A9C01002D3101020000000000000004000000806506
+:2000C000268000000000000000006EC3000028230000435120444520594F365353570000C6
+:2000E000000000000000000000000000000000000000000000000000000000000000000000
+:200100000000000000000000000000000000000000000000000000000000000000000000DF
+:200120000000000000000000000000000000000000000000000000000000000000000000BF
+:2001400000000000000000000000000000000000000000000000000000000000000000009F
+:2001600000000000000000000000000000000000000000000000000000000000000000007F
+:2001800000000000000000000000000000000000000000000000000000000000000000005F
+:2001A00000000000000000000000000000000000000000000000000000000000000000003F
+:2001C00000000000000000000000000000000000000000000000000000000000000000001F
+:2001E0000000000000000000000000000000000000000000000000000000000000000000FF
+:200200000000000000000000000000000000000000000000000000000000000000000000DE
+:200220000000000000000000000000000000000000000000000000000000000000000000BE
+:2002400000000000000000000000000000000000000000000000000000000000000000009E
+:2002600000000000000000000000000000000000000000000000000000000000000000007E
+:2002800000000000000000000000000000000000000000000000000000000000000000005E
+:2002A00000000000000000000000000000000000000000000000000000000000000000003E
+:2002C00000000000000000000000000000000000000000000000000000000000000000001E
+:2002E0000000000000000000000000000000000000000000000000000000000000000000FE
+:200300000000000000000000000000000000000000000000000000000000000000000000DD
+:200320000000000000000000000000000000000000000000000000000000000000000000BD
+:2003400000000000000000000000000000000000000000000000000000000000000000009D
+:2003600000000000000000000000000000000000000000000000000000000000000000007D
+:2003800000000000000000000000000000000000000000000000000000000000000000005D
+:2003A00000000000000000000000000000000000000000000000000000000000000000003D
+:2003C00000000000000000000000000000000000000000000000000000000000000000001D
+:2003E0000000000000000000000000000000000000000000000000000000000000000000FD
+:00000001FF`;
+			// onEepLoaded('bob.eep', mockContent);
+			createInitialMarkup();
+
+			$('#fileToRead').change(function() {
+				var fileReader = new FileReader(); 
+				fileReader.onloadend = function(file) { 
+					return function(e) {
+						onEepLoaded(file.name, fileReader.result);
+					}
+				}(this.files[0]);
+				fileReader.readAsBinaryString(this.files[0]);
+			});
+
+
+			var $form = $('#eepromForm');
+			$form
+				.on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+					// preventing the unwanted behaviours
+					e.preventDefault();
+					e.stopPropagation();
+				})
+				.on('dragover dragenter', function() {
+					$('div.holder').addClass( 'is-dragover' );
+				})
+				.on('dragleave dragend drop', function() {
+					$('div.holder').removeClass( 'is-dragover' );
+				})
+				.on('drop', function(e) {
+					droppedFiles = e.originalEvent.dataTransfer.files; // the files that were dropped
+					var fileReader = new FileReader(); 
+					fileReader.onloadend = function(file) { 
+						return function(e) {
+							onEepLoaded(file.name, fileReader.result);
+						}
+					}(droppedFiles[0]);
+					fileReader.readAsBinaryString(droppedFiles[0]);
+				});			
+
+		})
+	</script>
+</head>
+<body>
+	<form id="eepromForm">
+		<input id="fileToRead" type="file" accept=".eep"/>
+	</form>
+</body>
+</html>
+
