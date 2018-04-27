@@ -2,7 +2,7 @@
 <head>
 	<title>U3S EEPROM GUI</title>
 	<meta charset="utf-8">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="u3s.js"></script>
 
 	<link href="//fonts.googleapis.com/css?family=Corben:bold" rel="stylesheet" type="text/css">
@@ -384,6 +384,24 @@
 				})
 				.appendTo($menu);
 			$('<li>')
+				.attr('id', 'menu-item-cli-tool')
+				.attr('title', 'Download CLI eeprom editing tool')
+				.text('CLI Tool')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					window.location = 'https://github.com/yo6ssw/u3s-eeprom-tool/releases';
+				})
+				.appendTo($menu);
+			$('<li>')
+				.attr('id', 'menu-item-donate')
+				.attr('title', 'Support the development')
+				.text('Donate')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					window.location = 'https://www.paypal.me/benishor';
+				})
+				.appendTo($menu);
+			$('<li>')
 				.text('Save')
 				.addClass('menu-item-right')
 				.on('click', function() {
@@ -539,6 +557,24 @@
 			var $holder = $('<div>').addClass('holder');
 
 			var $menu = $('<ul>');
+			$('<li>')
+				.attr('id', 'menu-item-cli-tool')
+				.attr('title', 'Download CLI eeprom editing tool')
+				.text('CLI Tool')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					window.location = 'https://github.com/yo6ssw/u3s-eeprom-tool/releases';
+				})
+				.appendTo($menu);
+			$('<li>')
+				.attr('id', 'menu-item-donate')
+				.attr('title', 'Support the development')
+				.text('Donate')
+				.addClass('menu-item-right')
+				.on('click', function() {
+					window.location = 'https://www.paypal.me/benishor';
+				})
+				.appendTo($menu);
 			$('<li>')
 				.attr('id', 'menu-item-open')
 				.text('Open')
